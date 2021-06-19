@@ -3,66 +3,70 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FastNoise.h"
-#include "VoxelWorldGenerators/VoxelWorldGeneratorHelpers.h"
+#include "FastNoise/VoxelFastNoise.h"
+#include "VoxelGenerators/VoxelGeneratorHelpers.h"
 #include "VoxelMaterialBuilder.h"
 #include "MyWorldGenerator.generated.h"
 
 UCLASS(Blueprintable)
-class UMyWorldGenerator : public UVoxelWorldGenerator
+class UMyWorldGenerator : public UVoxelGenerator
 {
 	GENERATED_BODY()
 
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
+		int32 Seed = 1337;
+	//
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float NoiseHeight1 = 10.f;
 	//
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float NoiseHeight2 = 10.f;
 	//
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float NoiseHeightMax = 10.f;
 	//
-	UPROPERTY(EditAnywhere, Category = "Generator", meta = (UIMax = "1", UIMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator", meta = (UIMax = "1", UIMin = "0"))
 		float _3D_Noise_Frequency1 = 0.1f;
 	//
-	UPROPERTY(EditAnywhere, Category = "Generator", meta = (UIMax = "1", UIMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator", meta = (UIMax = "1", UIMin = "0"))
 		float _3D_Noise_Frequency2 = 0.5f;
 	//
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float DistanceBetweenSteps = 50.f;
 	// 
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float OffsetSize = 10000.f;
 	// 
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float SmoothNess = 5.f;
 	// 
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		float Radius = 64.f;
 	// 
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		int32 Deepness = -4;
 	// 
-	UPROPERTY(EditAnywhere, Category = "Generator")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Generator")
 		int32 MaterialNumber;
 	// 
 
 
 	//~ Begin UVoxelWorldGenerator Interface
-	virtual TVoxelSharedRef<FVoxelWorldGeneratorInstance> GetInstance() override;
-
+	virtual TVoxelSharedRef<FVoxelGeneratorInstance> GetInstance() override;
 	//~ End UVoxelWorldGenerator Interface
 };
 
-class FVoxelMyWorldGeneratorInstance : public TVoxelWorldGeneratorInstanceHelper<FVoxelMyWorldGeneratorInstance, UMyWorldGenerator>
+class FMyWorldGeneratorInstance : public TVoxelGeneratorInstanceHelper<FMyWorldGeneratorInstance, UMyWorldGenerator>
 {
 public:
-	explicit FVoxelMyWorldGeneratorInstance(const UMyWorldGenerator& MyGenerator);
+	using Super = TVoxelGeneratorInstanceHelper<FMyWorldGeneratorInstance, UMyWorldGenerator>;
 
-	//~ Begin FVoxelWorldGeneratorInstance Interface
-	virtual void Init(const FVoxelWorldGeneratorInit& InitStruct) override;
+	explicit FMyWorldGeneratorInstance(const UMyWorldGenerator& MyGenerator);
+
+	//~ Begin FVoxelGeneratorInstance Interface
+	virtual void Init(const FVoxelGeneratorInit& InitStruct) override;
 
 	v_flt GetValueImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const;
 	FVoxelMaterial GetMaterialImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const;
@@ -73,6 +77,7 @@ public:
 	//~ End FVoxelWorldGeneratorInstance Interface
 
 private:
+	const int32 Seed;
 	float NoiseHeight1;
 	float NoiseHeight2;
 	float NoiseHeightMax;

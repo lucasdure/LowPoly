@@ -1,35 +1,37 @@
 #include "MyWorldGenerator.h"
+#include "FastNoise/VoxelFastNoise.inl"
 
-TVoxelSharedRef<FVoxelWorldGeneratorInstance> UMyWorldGenerator::GetInstance()
+TVoxelSharedRef<FVoxelGeneratorInstance> UMyWorldGenerator::GetInstance()
 {
-	return MakeVoxelShared<FVoxelMyWorldGeneratorInstance>(*this);
+	return MakeVoxelShared<FMyWorldGeneratorInstance>(*this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-FVoxelMyWorldGeneratorInstance::FVoxelMyWorldGeneratorInstance(const UMyWorldGenerator& MyGenerator)
+FMyWorldGeneratorInstance::FMyWorldGeneratorInstance(const UMyWorldGenerator& MyGenerator)
+	: Super(&MyGenerator)
+	, Seed(MyGenerator.Seed)
+	, NoiseHeight1(MyGenerator.NoiseHeight1)
+	, NoiseHeight2(MyGenerator.NoiseHeight2)
+	, NoiseHeightMax(MyGenerator.NoiseHeightMax)
+	, _3D_Noise_Frequency1(MyGenerator._3D_Noise_Frequency1)
+	, _3D_Noise_Frequency2(MyGenerator._3D_Noise_Frequency2)
+	, DistanceBetweenSteps(MyGenerator.DistanceBetweenSteps)
+	, OffsetSize(MyGenerator.OffsetSize)
+	, SmoothNess(MyGenerator.SmoothNess)
+	, MaterialNumber(MyGenerator.MaterialNumber)
+	, Radius(MyGenerator.Radius)
+	, Deepness(MyGenerator.Deepness)
 {
-	NoiseHeight1 = MyGenerator.NoiseHeight1;
-	NoiseHeight2 = MyGenerator.NoiseHeight2;
-	NoiseHeightMax = MyGenerator.NoiseHeightMax;
-	_3D_Noise_Frequency1 = MyGenerator._3D_Noise_Frequency1;
-	_3D_Noise_Frequency2 = MyGenerator._3D_Noise_Frequency2;
-	DistanceBetweenSteps = MyGenerator.DistanceBetweenSteps;
-	OffsetSize = MyGenerator.OffsetSize;
-	SmoothNess = MyGenerator.SmoothNess;
-	MaterialNumber = MyGenerator.MaterialNumber;
-	Radius = MyGenerator.Radius;
-	Deepness = MyGenerator.Deepness;
 }
 
 
-void FVoxelMyWorldGeneratorInstance::Init(const FVoxelWorldGeneratorInit& InitStruct)
+void FMyWorldGeneratorInstance::Init(const FVoxelGeneratorInit& InitStruct)
 {
-	static const FName SeedName = "MySeed";
-	Noise.SetSeed(InitStruct.Seeds.Contains(SeedName) ? InitStruct.Seeds[SeedName] : 1337);
+	Noise.SetSeed(Seed);
 }
 
-v_flt FVoxelMyWorldGeneratorInstance::GetValueImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const
+v_flt FMyWorldGeneratorInstance::GetValueImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const
 {
 	if (Z >= DistanceBetweenSteps / 2 || FVector(X, Y, 0).Size() >= Radius)
 		return 1;
@@ -53,7 +55,7 @@ v_flt FVoxelMyWorldGeneratorInstance::GetValueImpl(v_flt X, v_flt Y, v_flt Z, in
 		return 1;
 }
 
-FVoxelMaterial FVoxelMyWorldGeneratorInstance::GetMaterialImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const
+FVoxelMaterial FMyWorldGeneratorInstance::GetMaterialImpl(v_flt X, v_flt Y, v_flt Z, int32 LOD, const FVoxelItemStack& Items) const
 {
 	FVoxelMaterialBuilder Builder;
 	Builder.SetMaterialConfig(EVoxelMaterialConfig::SingleIndex);
@@ -72,7 +74,7 @@ FVoxelMaterial FVoxelMyWorldGeneratorInstance::GetMaterialImpl(v_flt X, v_flt Y,
 	}
 }
 
-TVoxelRange<v_flt> FVoxelMyWorldGeneratorInstance::GetValueRangeImpl(const FVoxelIntBox& Bounds, int32 LOD, const FVoxelItemStack& Items) const
+TVoxelRange<v_flt> FMyWorldGeneratorInstance::GetValueRangeImpl(const FVoxelIntBox& Bounds, int32 LOD, const FVoxelItemStack& Items) const
 {
 	// Return the values that GetValueImpl can return in Bounds
 	// Used to skip chunks where the value does not change
@@ -91,7 +93,7 @@ TVoxelRange<v_flt> FVoxelMyWorldGeneratorInstance::GetValueRangeImpl(const FVoxe
 	return Value / SmoothNess;
 }
 
-FVector FVoxelMyWorldGeneratorInstance::GetUpVector(v_flt X, v_flt Y, v_flt Z) const
+FVector FMyWorldGeneratorInstance::GetUpVector(v_flt X, v_flt Y, v_flt Z) const
 {
 	// Used by spawners
 	return FVector::UpVector;
